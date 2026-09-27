@@ -1,4 +1,4 @@
-# NOOR | Assistive AI Wearable
+# NOOR | Smart glasses for blind and visually impaired users
 
 <p align="center">
   <img src="assets/noor-prototype.jpg" alt="NOOR proof-of-concept module attached to an eyeglass frame" width="820">
