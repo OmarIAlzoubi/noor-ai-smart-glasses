@@ -1,4 +1,4 @@
-# NOOR | Smart glasses for blind and visually impaired people 
+# NOOR | Assistive AI Wearable
 
 <p align="center">
   <img src="assets/noor-prototype.jpg" alt="NOOR proof-of-concept module attached to an eyeglass frame" width="820">
@@ -8,16 +8,16 @@
 
 NOOR is a bilingual assistive-AI prototype for people who are blind or visually impaired. It combines scene narration, hazard detection, visual question answering, recognition of familiar people, and short-term scene memory in a spoken interface. The wearable was conceived as a **detachable module that mounts on the user's preferred eyeglass frame**, including a frame chosen for comfort, style, or prescription.
 
-> **Research proof of concept.** The pictured enclosure and the Raspberry Pi–server setup demonstrate the system; they are neither a final product design nor minimum hardware requirements. NOOR complements established mobility aids and has not been validated as a replacement for them.
+> **Prototype note:** NOOR explores a modular assistive-AI concept designed to bring spoken context to everyday eyewear. The enclosure shown is an early prototype, and future iterations can refine its size, comfort, and integration. NOOR is designed to work alongside the mobility aids people already use.
 
 ## At a glance
 
 | Capability | Prototype approach |
 | --- | --- |
-| Scene narration | LLaMA 3.2 Vision describes meaningful visual changes |
+| Scene narration | BLIP generates concise captions for meaningful visual changes; adopted in a later iteration for substantially faster inference |
 | Hazard alerts | Custom YOLOv8-nano detector for crosswalks, potholes, and stairs at runtime |
 | Visual Q&A | Spoken questions are answered using a captured camera frame |
-| Scene history | Up to 10 recent scenes retrieved by semantic similarity and recency |
+| Scene history | Earlier scenes can be retrieved by semantic similarity and recency |
 | People recognition | Announces previously registered people in view |
 | User authentication | Face recognition or SpeechBrain ECAPA voice embeddings |
 | Interaction | Arabic and English speech through local model pipelines |
@@ -54,7 +54,7 @@ The active scene-change path compares color histograms between frames, then requ
 flowchart TB
     A["Camera frame"] --> B{"Significant visual change?"}
     B -- "No" --> C["Skip scene narration"]
-    B -- "Yes" --> D["LLaMA 3.2 Vision"]
+    B -- "Yes" --> D["BLIP image captioning"]
     D --> E{"New semantic context?"}
     E -- "Yes" --> F["Store scene and narrate"]
     E -- "No" --> C
@@ -65,13 +65,13 @@ The code also contains an optical-flow utility, but it is **not enabled** in the
 
 ### Contextual scene memory
 
-Meaningful scenes are stored in a fixed-size deque of at most **10** entries. `all-MiniLM-L6-v2` embeds scene context and a user's retrospective question. Retrieval ranks scenes with cosine similarity and a time-decay term:
+NOOR keeps a scene history for retrospective questions. `all-MiniLM-L6-v2` embeds scene context and a user's question. Retrieval ranks available scenes with cosine similarity and a time-decay term:
 
 ```python
 score = 0.7 * semantic_similarity + 0.3 * temporal_relevance
 ```
 
-This makes questions such as “What did I pass a few minutes ago?” possible within the short retained history. The weights describe this prototype's implementation, not a general benchmark.
+This makes questions such as “What did I pass a few minutes ago?” possible by searching earlier observations, rather than only the current camera frame. The weights describe this prototype's retrieval strategy, not a general benchmark.
 
 ### Arabic and English voice paths
 
